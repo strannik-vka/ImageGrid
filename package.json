@@ -1,0 +1,30 @@
+{
+  "name": "admined",
+  "version": "0.1.1",
+  "description": "Админка",
+  "main": "dist/index.js",
+  "keywords": [
+    "images",
+    "gallery",
+    "grig",
+    "image-grid"
+  ],
+  "author": "https://vk.com/strannik_vka",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strannik-vka/imagegrid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/strannik-vka/imagegrid/issues"
+  },
+  "homepage": "https://github.com/strannik-vka/imagegrid#readme",
+  "scripts": {
+    "development": "mix",
+    "watch": "mix watch",
+    "production": "mix --production"
+  },
+  "devDependencies": {
+    "laravel-mix": "^6.0.39"
+  }
+}
