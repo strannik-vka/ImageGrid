@@ -1,7 +1,7 @@
 {
-  "name": "admined",
+  "name": "imagegrid",
   "version": "0.1.1",
-  "description": "Админка",
+  "description": "imagegrid",
   "main": "dist/index.js",
   "keywords": [
     "images",
