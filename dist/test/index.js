@@ -31,13 +31,13 @@ var ImageGrid = /*#__PURE__*/function () {
     this.container = obj.container;
     this.breakpoints = obj.breakpoints;
     this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
+    this.setBreakpoint();
+    this.each();
     window.addEventListener('resize', function () {
       _this.setBreakpoint();
 
       _this.each();
     }, true);
-    this.setBreakpoint();
-    this.each();
   }
 
   _createClass(ImageGrid, [{
@@ -93,13 +93,13 @@ var ImageGrid = /*#__PURE__*/function () {
                 _this3.dimensions[i + 1].height = calc.height;
               }
 
-              var calcPosition1 = _this3.calcPosition(i),
-                  calcPosition2 = _this3.calcPosition(i + 1);
+              var calcPosition1 = _this3.calcLeftPosition(i),
+                  calcPosition2 = _this3.calcLeftPosition(i + 1);
 
               imgs[i].style.top = heightAll + 'px';
-              imgs[i].style.left = calcPosition1.left + 'px';
+              imgs[i].style.left = calcPosition1 + 'px';
               imgs[i + 1].style.top = heightAll + 'px';
-              imgs[i + 1].style.left = calcPosition2.left + 'px';
+              imgs[i + 1].style.left = calcPosition2 + 'px';
               heightAll += _this3.dimensions[i].height + _this3.margin;
             }
           }
@@ -110,21 +110,9 @@ var ImageGrid = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "calcPosition",
-    value: function calcPosition(i) {
-      var isEven = i % 2;
-
-      if (i > 1) {
-        return {
-          top: (isEven ? this.dimensions[i - 2].height : this.dimensions[i - 1].height) + this.margin,
-          left: isEven ? this.dimensions[i - 1].width + this.margin : 0
-        };
-      } else {
-        return {
-          top: 0,
-          left: isEven ? this.dimensions[i - 1].width + this.margin : 0
-        };
-      }
+    key: "calcLeftPosition",
+    value: function calcLeftPosition(i) {
+      return i % 2 ? this.dimensions[i - 1].width + this.margin : 0;
     }
   }, {
     key: "calcDimensions",

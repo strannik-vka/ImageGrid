@@ -8,13 +8,13 @@ class ImageGrid {
         this.breakpoints = obj.breakpoints;
         this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
 
+        this.setBreakpoint();
+        this.each();
+
         window.addEventListener('resize', () => {
             this.setBreakpoint();
             this.each();
         }, true);
-
-        this.setBreakpoint();
-        this.each();
     }
 
     setBreakpoint() {
@@ -66,13 +66,13 @@ class ImageGrid {
                             this.dimensions[i + 1].height = calc.height;
                         }
 
-                        var calcPosition1 = this.calcPosition(i),
-                            calcPosition2 = this.calcPosition(i + 1);
+                        var calcPosition1 = this.calcLeftPosition(i),
+                            calcPosition2 = this.calcLeftPosition(i + 1);
 
                         imgs[i].style.top = heightAll + 'px';
-                        imgs[i].style.left = calcPosition1.left + 'px';
+                        imgs[i].style.left = calcPosition1 + 'px';
                         imgs[i + 1].style.top = heightAll + 'px';
-                        imgs[i + 1].style.left = calcPosition2.left + 'px';
+                        imgs[i + 1].style.left = calcPosition2 + 'px';
 
                         heightAll += this.dimensions[i].height + this.margin;
                     }
@@ -84,20 +84,8 @@ class ImageGrid {
         });
     }
 
-    calcPosition(i) {
-        var isEven = i % 2;
-
-        if (i > 1) {
-            return {
-                top: (isEven ? this.dimensions[i - 2].height : this.dimensions[i - 1].height) + this.margin,
-                left: isEven ? this.dimensions[i - 1].width + this.margin : 0
-            }
-        } else {
-            return {
-                top: 0,
-                left: isEven ? this.dimensions[i - 1].width + this.margin : 0
-            }
-        }
+    calcLeftPosition(i) {
+        return i % 2 ? this.dimensions[i - 1].width + this.margin : 0
     }
 
     calcDimensions(dimension1, dimension2, container_width) {
