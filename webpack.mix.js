@@ -4,4 +4,4 @@ mix.options({
     legacyNodePolyfills: false
 }).setPublicPath('dist');
 
-mix.js('./src/index.js', '/');
+mix.js('./test/index.js', '/test');

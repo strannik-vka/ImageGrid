@@ -2,7 +2,7 @@
   "name": "imagegrid",
   "version": "0.1.1",
   "description": "imagegrid",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "keywords": [
     "images",
     "gallery",
@@ -25,6 +25,9 @@
     "production": "mix --production"
   },
   "devDependencies": {
-    "laravel-mix": "^6.0.39"
+    "laravel-mix": "^6.0.39",
+    "resolve-url-loader": "^4.0.0",
+    "sass": "^1.43.5",
+    "sass-loader": "^12.3.0"
   }
 }
