@@ -79,6 +79,7 @@ class ImageGrid {
                 }
 
                 parent.style.height = heightAll + 'px';
+                parent.style.opacity = '1';
             });
         });
     }

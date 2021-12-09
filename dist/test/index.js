@@ -105,6 +105,7 @@ var ImageGrid = /*#__PURE__*/function () {
           }
 
           parent.style.height = heightAll + 'px';
+          parent.style.opacity = '1';
         });
       });
     }
