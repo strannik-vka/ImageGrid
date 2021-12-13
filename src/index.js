@@ -5,6 +5,7 @@ class ImageGrid {
 
         this.dimensions = {};
         this.container = obj.container;
+        this.onInit = obj.onInit;
         this.breakpoints = obj.breakpoints;
         this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
 
@@ -45,7 +46,7 @@ class ImageGrid {
             var imgs = parent.querySelectorAll('img'),
                 parentWidth = this.getElemWidth(parent);
 
-            this.getDimensionsAll(imgs, (dimensions) => {
+            this.getDimensionsAll(imgs, () => {
                 var heightAll = 0;
 
                 for (var i = 0; i < imgs.length; i++) {
@@ -89,6 +90,10 @@ class ImageGrid {
 
                 parent.style.height = heightAll + 'px';
                 parent.style.opacity = '1';
+
+                if (typeof this.onInit === 'function') {
+                    this.onInit();
+                }
             });
         });
     }

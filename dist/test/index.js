@@ -29,6 +29,7 @@ var ImageGrid = /*#__PURE__*/function () {
     this.styles();
     this.dimensions = {};
     this.container = obj.container;
+    this.onInit = obj.onInit;
     this.breakpoints = obj.breakpoints;
     this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
     this.setBreakpoint();
@@ -74,7 +75,7 @@ var ImageGrid = /*#__PURE__*/function () {
         var imgs = parent.querySelectorAll('img'),
             parentWidth = _this3.getElemWidth(parent);
 
-        _this3.getDimensionsAll(imgs, function (dimensions) {
+        _this3.getDimensionsAll(imgs, function () {
           var heightAll = 0;
 
           for (var i = 0; i < imgs.length; i++) {
@@ -117,6 +118,10 @@ var ImageGrid = /*#__PURE__*/function () {
 
           parent.style.height = heightAll + 'px';
           parent.style.opacity = '1';
+
+          if (typeof _this3.onInit === 'function') {
+            _this3.onInit();
+          }
         });
       });
     }
