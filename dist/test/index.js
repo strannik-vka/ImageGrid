@@ -82,24 +82,35 @@ var ImageGrid = /*#__PURE__*/function () {
             var isEven = i % 2;
 
             if (!isEven) {
-              var calc = _this3.calcDimensions(dimensions[i], dimensions[i + 1], parentWidth);
+              var calc = _this3.calcDimensions(i, parentWidth);
 
               if (_typeof(calc) === 'object' && calc != null) {
                 imgs[i].style.width = calc.width1 + 'px';
-                imgs[i + 1].style.width = calc.width2 + 'px';
+
+                if (calc.width2) {
+                  imgs[i + 1].style.width = calc.width2 + 'px';
+                }
+
                 _this3.dimensions[i].width = calc.width1;
                 _this3.dimensions[i].height = calc.height;
-                _this3.dimensions[i + 1].width = calc.width2;
-                _this3.dimensions[i + 1].height = calc.height;
+
+                if (calc.width2) {
+                  _this3.dimensions[i + 1].width = calc.width2;
+                  _this3.dimensions[i + 1].height = calc.height;
+                }
               }
 
               var calcPosition1 = _this3.calcLeftPosition(i),
-                  calcPosition2 = _this3.calcLeftPosition(i + 1);
+                  calcPosition2 = calc.width2 ? _this3.calcLeftPosition(i + 1) : null;
 
               imgs[i].style.top = heightAll + 'px';
               imgs[i].style.left = calcPosition1 + 'px';
-              imgs[i + 1].style.top = heightAll + 'px';
-              imgs[i + 1].style.left = calcPosition2 + 'px';
+
+              if (calc.width2) {
+                imgs[i + 1].style.top = heightAll + 'px';
+                imgs[i + 1].style.left = calcPosition2 + 'px';
+              }
+
               heightAll += _this3.dimensions[i].height + _this3.margin;
             }
           }
@@ -116,7 +127,18 @@ var ImageGrid = /*#__PURE__*/function () {
     }
   }, {
     key: "calcDimensions",
-    value: function calcDimensions(dimension1, dimension2, container_width) {
+    value: function calcDimensions(i, container_width) {
+      var dimension1 = this.dimensions[i],
+          dimension2 = typeof this.dimensions[i + 1] !== 'undefined' && this.dimensions[i + 1] != null ? this.dimensions[i + 1] : null;
+
+      if (dimension2 === null) {
+        return {
+          width1: container_width,
+          width2: null,
+          height: dimension1.height * container_width / dimension1.width
+        };
+      }
+
       container_width = container_width - this.margin; // 1. действие: выровнять картинки
 
       if (dimension1.height != dimension2.height) {

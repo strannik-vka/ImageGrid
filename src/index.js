@@ -54,25 +54,34 @@ class ImageGrid {
                     var isEven = i % 2;
 
                     if (!isEven) {
-                        var calc = this.calcDimensions(dimensions[i], dimensions[i + 1], parentWidth);
+                        var calc = this.calcDimensions(i, parentWidth);
 
                         if (typeof calc === 'object' && calc != null) {
                             imgs[i].style.width = calc.width1 + 'px';
-                            imgs[i + 1].style.width = calc.width2 + 'px';
+
+                            if (calc.width2) {
+                                imgs[i + 1].style.width = calc.width2 + 'px';
+                            }
 
                             this.dimensions[i].width = calc.width1;
                             this.dimensions[i].height = calc.height;
-                            this.dimensions[i + 1].width = calc.width2;
-                            this.dimensions[i + 1].height = calc.height;
+
+                            if (calc.width2) {
+                                this.dimensions[i + 1].width = calc.width2;
+                                this.dimensions[i + 1].height = calc.height;
+                            }
                         }
 
                         var calcPosition1 = this.calcLeftPosition(i),
-                            calcPosition2 = this.calcLeftPosition(i + 1);
+                            calcPosition2 = calc.width2 ? this.calcLeftPosition(i + 1) : null;
 
                         imgs[i].style.top = heightAll + 'px';
                         imgs[i].style.left = calcPosition1 + 'px';
-                        imgs[i + 1].style.top = heightAll + 'px';
-                        imgs[i + 1].style.left = calcPosition2 + 'px';
+
+                        if (calc.width2) {
+                            imgs[i + 1].style.top = heightAll + 'px';
+                            imgs[i + 1].style.left = calcPosition2 + 'px';
+                        }
 
                         heightAll += this.dimensions[i].height + this.margin;
                     }
@@ -88,7 +97,19 @@ class ImageGrid {
         return i % 2 ? this.dimensions[i - 1].width + this.margin : 0
     }
 
-    calcDimensions(dimension1, dimension2, container_width) {
+    calcDimensions(i, container_width) {
+        var dimension1 = this.dimensions[i],
+            dimension2 = typeof this.dimensions[i + 1] !== 'undefined' && this.dimensions[i + 1] != null
+                ? this.dimensions[i + 1] : null;
+
+        if (dimension2 === null) {
+            return {
+                width1: container_width,
+                width2: null,
+                height: dimension1.height * container_width / dimension1.width
+            }
+        }
+
         container_width = container_width - this.margin;
 
         // 1. действие: выровнять картинки
