@@ -136,15 +136,23 @@ class ImageGrid {
     getDimensionsAll(imgs, callback) {
         var dimensions = {};
 
-        imgs.forEach((img, i) => {
-            // img.onload = () => {
+        var getDimensionsCallback = (i, img) => {
             dimensions[i] = this.getDimensions(img);
 
             if (Object.keys(dimensions).length == imgs.length) {
                 this.dimensions = dimensions;
                 callback(dimensions);
             }
-            // }
+        }
+
+        imgs.forEach((img, i) => {
+            if (this.isImageLoaded(img)) {
+                getDimensionsCallback(i, img);
+            } else {
+                img.onload = () => {
+                    getDimensionsCallback(i, img);
+                }
+            }
         });
     }
 
@@ -164,6 +172,18 @@ class ImageGrid {
             width: width,
             height: height,
         }
+    }
+
+    isImageLoaded(img) {
+        if (!img.complete) {
+            return false;
+        }
+
+        if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0) {
+            return false;
+        }
+
+        return true;
     }
 
     getOrientation(img, getDimensions) {

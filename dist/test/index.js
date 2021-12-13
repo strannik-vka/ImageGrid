@@ -163,15 +163,24 @@ var ImageGrid = /*#__PURE__*/function () {
       var _this4 = this;
 
       var dimensions = {};
-      imgs.forEach(function (img, i) {
-        // img.onload = () => {
+
+      var getDimensionsCallback = function getDimensionsCallback(i, img) {
         dimensions[i] = _this4.getDimensions(img);
 
         if (Object.keys(dimensions).length == imgs.length) {
           _this4.dimensions = dimensions;
           callback(dimensions);
-        } // }
+        }
+      };
 
+      imgs.forEach(function (img, i) {
+        if (_this4.isImageLoaded(img)) {
+          getDimensionsCallback(i, img);
+        } else {
+          img.onload = function () {
+            getDimensionsCallback(i, img);
+          };
+        }
       });
     }
   }, {
@@ -191,6 +200,19 @@ var ImageGrid = /*#__PURE__*/function () {
         width: width,
         height: height
       };
+    }
+  }, {
+    key: "isImageLoaded",
+    value: function isImageLoaded(img) {
+      if (!img.complete) {
+        return false;
+      }
+
+      if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0) {
+        return false;
+      }
+
+      return true;
     }
   }, {
     key: "getOrientation",
