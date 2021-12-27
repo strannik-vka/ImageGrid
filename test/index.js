@@ -1,5 +1,7 @@
 import ImageGrid from '../../ImageGrid';
 
 new ImageGrid({
-    selector: '#photos'
+    container: '#photos',
+    margin: 8,
+    columns: 6
 });

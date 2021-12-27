@@ -1,3 +1,7 @@
+require('./helpers');
+
+import Img from "./img";
+
 class ImageGrid {
 
     constructor(obj) {
@@ -7,7 +11,8 @@ class ImageGrid {
         this.container = obj.container;
         this.onInit = obj.onInit;
         this.breakpoints = obj.breakpoints;
-        this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
+        this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 8;
+        this.columns = typeof obj.columns !== 'undefined' ? obj.columns : 6;
 
         this.setBreakpoint();
         this.each();
@@ -38,55 +43,47 @@ class ImageGrid {
     }
 
     each() {
-        var parents = document.querySelectorAll(this.container);
+        var parents = document.querySelectorAll(this.container),
+            ImageClass = new Img();
 
         parents.forEach((parent) => {
             parent.classList.add('image-grid-parent');
 
             var imgs = parent.querySelectorAll('img'),
-                parentWidth = this.getElemWidth(parent);
+                parentWidth = elementWidth(parent);
 
-            this.getDimensionsAll(imgs, () => {
+            ImageClass.getDimensionsAll(imgs, (dimensions) => {
+                this.dimensions = dimensions;
+
                 var heightAll = 0;
 
                 for (var i = 0; i < imgs.length; i++) {
                     imgs[i].classList.add('image-grid-item');
 
-                    var isEven = i % 2;
+                    var isFirst = (i + 1) % this.columns == 1;
 
-                    if (!isEven) {
-                        var calc = this.calcDimensions(i, parentWidth);
+                    if (isFirst || this.columns == 1) {
+                        // Рамеры фотографий
+                        var imageSizes = this.calcRowSizes(i, parentWidth, this.columns),
+                            rowImagesCount = Object.keys(imageSizes).length;
 
-                        if (typeof calc === 'object' && calc != null) {
-                            imgs[i].style.width = calc.width1 + 'px';
+                        // Позиции справа
+                        var rightPositions = this.calcRowPositions(imageSizes, rowImagesCount);
 
-                            if (calc.width2) {
-                                imgs[i + 1].style.width = calc.width2 + 'px';
-                            }
-
-                            this.dimensions[i].width = calc.width1;
-                            this.dimensions[i].height = calc.height;
-
-                            if (calc.width2) {
-                                this.dimensions[i + 1].width = calc.width2;
-                                this.dimensions[i + 1].height = calc.height;
-                            }
+                        // Вставка стилей
+                        for (var q = 0; q < rowImagesCount; q++) {
+                            imgs[i + q].style.top = heightAll + 'px';
+                            imgs[i + q].style.right = rightPositions[q + 1] + 'px';
+                            imgs[i + q].style.width = imageSizes[q + 1].width + 'px';
+                            imgs[i + q].style.height = imageSizes[q + 1].height + 'px';
                         }
 
-                        var calcPosition1 = this.calcLeftPosition(i),
-                            calcPosition2 = calc.width2 ? this.calcLeftPosition(i + 1) : null;
-
-                        imgs[i].style.top = heightAll + 'px';
-                        imgs[i].style.left = calcPosition1 + 'px';
-
-                        if (calc.width2) {
-                            imgs[i + 1].style.top = heightAll + 'px';
-                            imgs[i + 1].style.left = calcPosition2 + 'px';
-                        }
-
-                        heightAll += this.dimensions[i].height + this.margin;
+                        // Общая высота
+                        heightAll += imageSizes[1].height + this.margin;
                     }
                 }
+
+                heightAll = heightAll - this.margin;
 
                 parent.style.height = heightAll + 'px';
                 parent.style.opacity = '1';
@@ -98,126 +95,82 @@ class ImageGrid {
         });
     }
 
-    calcLeftPosition(i) {
-        return i % 2 ? this.dimensions[i - 1].width + this.margin : 0
-    }
+    calcRowSizes(index, container_width, columns) {
+        var sizes = {};
 
-    calcDimensions(i, container_width) {
-        var dimension1 = this.dimensions[i],
-            dimension2 = typeof this.dimensions[i + 1] !== 'undefined' && this.dimensions[i + 1] != null
-                ? this.dimensions[i + 1] : null;
-
-        if (dimension2 === null) {
-            return {
-                width1: container_width,
-                width2: null,
-                height: dimension1.height * container_width / dimension1.width
+        for (var i = 0; i < columns; i++) {
+            if (typeof this.dimensions[index + i] !== 'undefined') {
+                sizes[i + 1] = this.dimensions[index + i];
             }
         }
 
-        container_width = container_width - this.margin;
+        var sizesCount = Object.keys(sizes).length;
 
-        // 1. действие: выровнять картинки
-        if (dimension1.height != dimension2.height) {
-            // Новая ширина для большой картинки
-            var new_width = dimension1.height > dimension2.height
-                ? dimension2.height * dimension1.width / dimension1.height
-                : dimension1.height * dimension2.width / dimension2.height;
-
-            var images_width = new_width + (dimension1.height > dimension2.height ? dimension2.width : dimension1.width);
+        if (sizesCount == 1) {
+            sizes[1] = {
+                width: container_width,
+                height: sizes[1].height * container_width / sizes[1].width
+            }
         } else {
-            var new_width = dimension1.width,
-                images_width = dimension2.width + dimension1.width;
-        }
+            container_width = container_width - (this.margin * (sizesCount - 1));
 
-        // 2. действие: найти на сколько % измениить картинки, чтобы поместить в контейнер
-        if (images_width != container_width) {
-            var percent_new_width = 100 / (images_width / new_width),
-                width_new_width = (container_width / 100) * percent_new_width,
-                new_height = dimension1.height * (dimension1.height > dimension2.height ? width_new_width : container_width - width_new_width) / dimension1.width;
+            var images_width = sizes[1].width,
+                new_widths = { 1: sizes[1].width };
 
-            if (dimension1.height > dimension2.height) {
-                return {
-                    width1: width_new_width,
-                    width2: container_width - width_new_width,
-                    height: new_height
-                }
-            } else {
-                return {
-                    width1: container_width - width_new_width,
-                    width2: width_new_width,
-                    height: new_height
+            // 1. действие: выровнять картинки
+            for (var i = 1; i < sizesCount; i++) {
+                var number = i + 1;
+
+                if (sizes[1].height != sizes[number].height) {
+                    var new_width = sizes[1].height * sizes[number].width / sizes[number].height;
+
+                    images_width += new_width;
+                    new_widths[number] = new_width;
+                } else {
+                    images_width += sizes[number].width;
+                    new_widths[number] = sizes[number].width;
                 }
             }
-        }
 
-        return false;
-    }
+            // 2. действие: найти на сколько % измениить картинки, чтобы поместить в контейнер
+            if (images_width != container_width) {
+                for (var i = 0; i < sizesCount; i++) {
+                    var number = i + 1;
 
-    getElemWidth(elem) {
-        var computedStyle = getComputedStyle(elem, null);
-        return parseInt(computedStyle.getPropertyValue('width'));
-    }
+                    // 1. На сколько процентов занимает ширина картинки
+                    var percentWidthImage = 100 / (images_width / new_widths[number]);
 
-    getDimensionsAll(imgs, callback) {
-        var dimensions = {};
+                    // 2. Итоговая ширина картинки
+                    var finalWidthImage = (container_width / 100) * percentWidthImage;
 
-        var getDimensionsCallback = (i, img) => {
-            dimensions[i] = this.getDimensions(img);
+                    // 3. Итоговая высота
+                    var finalHeightImage = sizes[number].height * finalWidthImage / sizes[number].width;
 
-            if (Object.keys(dimensions).length == imgs.length) {
-                this.dimensions = dimensions;
-                callback(dimensions);
-            }
-        }
-
-        imgs.forEach((img, i) => {
-            if (this.isImageLoaded(img)) {
-                getDimensionsCallback(i, img);
-            } else {
-                img.onload = () => {
-                    getDimensionsCallback(i, img);
+                    // 4. Ставим размеры
+                    sizes[number] = {
+                        width: finalWidthImage,
+                        height: finalHeightImage
+                    }
                 }
             }
-        });
+        }
+
+        return sizes;
     }
 
-    getDimensions(img) {
-        if (img.naturalWidth) {
-            var width = img.naturalWidth,
-                height = img.naturalHeight;
-        } else {
-            var helpImg = new Image();
-            helpImg.src = img.src;
+    calcRowPositions(imageSizes, rowImagesCount) {
+        var positions = {},
+            startIndex = rowImagesCount - 1,
+            widths = imageSizes[rowImagesCount].width;
 
-            var width = helpImg.width,
-                height = helpImg.height;
+        positions[rowImagesCount] = 0;
+
+        for (var i = startIndex; i > 0; i--) {
+            positions[i] = widths + this.margin;
+            widths += imageSizes[i].width + this.margin;
         }
 
-        return {
-            width: width,
-            height: height,
-        }
-    }
-
-    isImageLoaded(img) {
-        if (!img.complete) {
-            return false;
-        }
-
-        if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-    getOrientation(img, getDimensions) {
-        if (!getDimensions && !getDimensions.real_width) {
-            getDimensions = this.getDimensions(img);
-        }
-
-        return (getDimensions.width / getDimensions.height > 1) ? 'landscape' : 'portrait';
+        return positions;
     }
 
 }

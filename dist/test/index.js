@@ -1,13 +1,27 @@
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
+/***/ "./src/helpers.js":
+/*!************************!*\
+  !*** ./src/helpers.js ***!
+  \************************/
+/***/ (() => {
+
+// Ширина элемента
+window.elementWidth = function (element) {
+  var computedStyle = getComputedStyle(element, null);
+  return parseInt(computedStyle.getPropertyValue('width'));
+};
+
+/***/ }),
+
+/***/ "./src/img.js":
+/*!********************!*\
+  !*** ./src/img.js ***!
+  \********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
@@ -20,6 +34,116 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var Img = /*#__PURE__*/function () {
+  function Img(obj) {
+    _classCallCheck(this, Img);
+
+    if (_typeof(obj) === 'object' && obj != null) {
+      this.img = obj.img;
+    }
+  }
+
+  _createClass(Img, [{
+    key: "isLoaded",
+    value: function isLoaded() {
+      if (!this.img.complete) {
+        return false;
+      }
+
+      if (typeof this.img.naturalWidth !== "undefined" && this.img.naturalWidth === 0) {
+        return false;
+      }
+
+      return true;
+    }
+  }, {
+    key: "getDimensionsAll",
+    value: function getDimensionsAll(imgs, callback) {
+      var _this = this;
+
+      var dimensions = {};
+
+      var getDimensionsCallback = function getDimensionsCallback(i, img) {
+        _this.img = img;
+        dimensions[i] = _this.getDimensions();
+
+        if (Object.keys(dimensions).length == imgs.length) {
+          callback(dimensions);
+        }
+      };
+
+      imgs.forEach(function (img, i) {
+        _this.img = img;
+
+        if (_this.isLoaded()) {
+          getDimensionsCallback(i, img);
+        } else {
+          img.onload = function () {
+            getDimensionsCallback(i, img);
+          };
+        }
+      });
+    }
+  }, {
+    key: "getDimensions",
+    value: function getDimensions() {
+      if (this.img.naturalWidth) {
+        var width = this.img.naturalWidth,
+            height = this.img.naturalHeight;
+      } else {
+        var helpImg = new Image();
+        helpImg.src = this.img.src;
+        var width = helpImg.width,
+            height = helpImg.height;
+      }
+
+      return {
+        width: width,
+        height: height
+      };
+    }
+  }, {
+    key: "getOrientation",
+    value: function getOrientation(dimensions) {
+      if (!dimensions && !dimensions.real_width) {
+        dimensions = this.getDimensions();
+      }
+
+      return dimensions.width / dimensions.height > 1 ? 'landscape' : 'portrait';
+    }
+  }]);
+
+  return Img;
+}();
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Img);
+
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _img__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./img */ "./src/img.js");
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+__webpack_require__(/*! ./helpers */ "./src/helpers.js");
+
+
+
 var ImageGrid = /*#__PURE__*/function () {
   function ImageGrid(obj) {
     var _this = this;
@@ -31,7 +155,8 @@ var ImageGrid = /*#__PURE__*/function () {
     this.container = obj.container;
     this.onInit = obj.onInit;
     this.breakpoints = obj.breakpoints;
-    this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 0;
+    this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 8;
+    this.columns = typeof obj.columns !== 'undefined' ? obj.columns : 6;
     this.setBreakpoint();
     this.each();
     window.addEventListener('resize', function () {
@@ -68,54 +193,42 @@ var ImageGrid = /*#__PURE__*/function () {
     value: function each() {
       var _this3 = this;
 
-      var parents = document.querySelectorAll(this.container);
+      var parents = document.querySelectorAll(this.container),
+          ImageClass = new _img__WEBPACK_IMPORTED_MODULE_0__["default"]();
       parents.forEach(function (parent) {
         parent.classList.add('image-grid-parent');
-
         var imgs = parent.querySelectorAll('img'),
-            parentWidth = _this3.getElemWidth(parent);
-
-        _this3.getDimensionsAll(imgs, function () {
+            parentWidth = elementWidth(parent);
+        ImageClass.getDimensionsAll(imgs, function (dimensions) {
+          _this3.dimensions = dimensions;
           var heightAll = 0;
 
           for (var i = 0; i < imgs.length; i++) {
             imgs[i].classList.add('image-grid-item');
-            var isEven = i % 2;
+            var isFirst = (i + 1) % _this3.columns == 1;
 
-            if (!isEven) {
-              var calc = _this3.calcDimensions(i, parentWidth);
+            if (isFirst || _this3.columns == 1) {
+              // Рамеры фотографий
+              var imageSizes = _this3.calcRowSizes(i, parentWidth, _this3.columns),
+                  rowImagesCount = Object.keys(imageSizes).length; // Позиции справа
 
-              if (_typeof(calc) === 'object' && calc != null) {
-                imgs[i].style.width = calc.width1 + 'px';
 
-                if (calc.width2) {
-                  imgs[i + 1].style.width = calc.width2 + 'px';
-                }
+              var rightPositions = _this3.calcRowPositions(imageSizes, rowImagesCount); // Вставка стилей
 
-                _this3.dimensions[i].width = calc.width1;
-                _this3.dimensions[i].height = calc.height;
 
-                if (calc.width2) {
-                  _this3.dimensions[i + 1].width = calc.width2;
-                  _this3.dimensions[i + 1].height = calc.height;
-                }
-              }
+              for (var q = 0; q < rowImagesCount; q++) {
+                imgs[i + q].style.top = heightAll + 'px';
+                imgs[i + q].style.right = rightPositions[q + 1] + 'px';
+                imgs[i + q].style.width = imageSizes[q + 1].width + 'px';
+                imgs[i + q].style.height = imageSizes[q + 1].height + 'px';
+              } // Общая высота
 
-              var calcPosition1 = _this3.calcLeftPosition(i),
-                  calcPosition2 = calc.width2 ? _this3.calcLeftPosition(i + 1) : null;
 
-              imgs[i].style.top = heightAll + 'px';
-              imgs[i].style.left = calcPosition1 + 'px';
-
-              if (calc.width2) {
-                imgs[i + 1].style.top = heightAll + 'px';
-                imgs[i + 1].style.left = calcPosition2 + 'px';
-              }
-
-              heightAll += _this3.dimensions[i].height + _this3.margin;
+              heightAll += imageSizes[1].height + _this3.margin;
             }
           }
 
+          heightAll = heightAll - _this3.margin;
           parent.style.height = heightAll + 'px';
           parent.style.opacity = '1';
 
@@ -126,129 +239,78 @@ var ImageGrid = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "calcLeftPosition",
-    value: function calcLeftPosition(i) {
-      return i % 2 ? this.dimensions[i - 1].width + this.margin : 0;
-    }
-  }, {
-    key: "calcDimensions",
-    value: function calcDimensions(i, container_width) {
-      var dimension1 = this.dimensions[i],
-          dimension2 = typeof this.dimensions[i + 1] !== 'undefined' && this.dimensions[i + 1] != null ? this.dimensions[i + 1] : null;
+    key: "calcRowSizes",
+    value: function calcRowSizes(index, container_width, columns) {
+      var sizes = {};
 
-      if (dimension2 === null) {
-        return {
-          width1: container_width,
-          width2: null,
-          height: dimension1.height * container_width / dimension1.width
+      for (var i = 0; i < columns; i++) {
+        if (typeof this.dimensions[index + i] !== 'undefined') {
+          sizes[i + 1] = this.dimensions[index + i];
+        }
+      }
+
+      var sizesCount = Object.keys(sizes).length;
+
+      if (sizesCount == 1) {
+        sizes[1] = {
+          width: container_width,
+          height: sizes[1].height * container_width / sizes[1].width
         };
-      }
-
-      container_width = container_width - this.margin; // 1. действие: выровнять картинки
-
-      if (dimension1.height != dimension2.height) {
-        // Новая ширина для большой картинки
-        var new_width = dimension1.height > dimension2.height ? dimension2.height * dimension1.width / dimension1.height : dimension1.height * dimension2.width / dimension2.height;
-        var images_width = new_width + (dimension1.height > dimension2.height ? dimension2.width : dimension1.width);
       } else {
-        var new_width = dimension1.width,
-            images_width = dimension2.width + dimension1.width;
-      } // 2. действие: найти на сколько % измениить картинки, чтобы поместить в контейнер
+        container_width = container_width - this.margin * (sizesCount - 1);
+        var images_width = sizes[1].width,
+            new_widths = {
+          1: sizes[1].width
+        }; // 1. действие: выровнять картинки
+
+        for (var i = 1; i < sizesCount; i++) {
+          var number = i + 1;
+
+          if (sizes[1].height != sizes[number].height) {
+            var new_width = sizes[1].height * sizes[number].width / sizes[number].height;
+            images_width += new_width;
+            new_widths[number] = new_width;
+          } else {
+            images_width += sizes[number].width;
+            new_widths[number] = sizes[number].width;
+          }
+        } // 2. действие: найти на сколько % измениить картинки, чтобы поместить в контейнер
 
 
-      if (images_width != container_width) {
-        var percent_new_width = 100 / (images_width / new_width),
-            width_new_width = container_width / 100 * percent_new_width,
-            new_height = dimension1.height * (dimension1.height > dimension2.height ? width_new_width : container_width - width_new_width) / dimension1.width;
+        if (images_width != container_width) {
+          for (var i = 0; i < sizesCount; i++) {
+            var number = i + 1; // 1. На сколько процентов занимает ширина картинки
 
-        if (dimension1.height > dimension2.height) {
-          return {
-            width1: width_new_width,
-            width2: container_width - width_new_width,
-            height: new_height
-          };
-        } else {
-          return {
-            width1: container_width - width_new_width,
-            width2: width_new_width,
-            height: new_height
-          };
+            var percentWidthImage = 100 / (images_width / new_widths[number]); // 2. Итоговая ширина картинки
+
+            var finalWidthImage = container_width / 100 * percentWidthImage; // 3. Итоговая высота
+
+            var finalHeightImage = sizes[number].height * finalWidthImage / sizes[number].width; // 4. Ставим размеры
+
+            sizes[number] = {
+              width: finalWidthImage,
+              height: finalHeightImage
+            };
+          }
         }
       }
 
-      return false;
+      return sizes;
     }
   }, {
-    key: "getElemWidth",
-    value: function getElemWidth(elem) {
-      var computedStyle = getComputedStyle(elem, null);
-      return parseInt(computedStyle.getPropertyValue('width'));
-    }
-  }, {
-    key: "getDimensionsAll",
-    value: function getDimensionsAll(imgs, callback) {
-      var _this4 = this;
+    key: "calcRowPositions",
+    value: function calcRowPositions(imageSizes, rowImagesCount) {
+      var positions = {},
+          startIndex = rowImagesCount - 1,
+          widths = imageSizes[rowImagesCount].width;
+      positions[rowImagesCount] = 0;
 
-      var dimensions = {};
-
-      var getDimensionsCallback = function getDimensionsCallback(i, img) {
-        dimensions[i] = _this4.getDimensions(img);
-
-        if (Object.keys(dimensions).length == imgs.length) {
-          _this4.dimensions = dimensions;
-          callback(dimensions);
-        }
-      };
-
-      imgs.forEach(function (img, i) {
-        if (_this4.isImageLoaded(img)) {
-          getDimensionsCallback(i, img);
-        } else {
-          img.onload = function () {
-            getDimensionsCallback(i, img);
-          };
-        }
-      });
-    }
-  }, {
-    key: "getDimensions",
-    value: function getDimensions(img) {
-      if (img.naturalWidth) {
-        var width = img.naturalWidth,
-            height = img.naturalHeight;
-      } else {
-        var helpImg = new Image();
-        helpImg.src = img.src;
-        var width = helpImg.width,
-            height = helpImg.height;
+      for (var i = startIndex; i > 0; i--) {
+        positions[i] = widths + this.margin;
+        widths += imageSizes[i].width + this.margin;
       }
 
-      return {
-        width: width,
-        height: height
-      };
-    }
-  }, {
-    key: "isImageLoaded",
-    value: function isImageLoaded(img) {
-      if (!img.complete) {
-        return false;
-      }
-
-      if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0) {
-        return false;
-      }
-
-      return true;
-    }
-  }, {
-    key: "getOrientation",
-    value: function getOrientation(img, getDimensions) {
-      if (!getDimensions && !getDimensions.real_width) {
-        getDimensions = this.getDimensions(img);
-      }
-
-      return getDimensions.width / getDimensions.height > 1 ? 'landscape' : 'portrait';
+      return positions;
     }
   }]);
 
@@ -316,8 +378,9 @@ var ImageGrid = /*#__PURE__*/function () {
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
+"use strict";
 /*!***********************!*\
   !*** ./test/index.js ***!
   \***********************/
@@ -325,7 +388,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ImageGrid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../ImageGrid */ "./src/index.js");
 
 new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
-  selector: '#photos'
+  container: '#photos',
+  margin: 8,
+  columns: 6
 });
 })();
 
