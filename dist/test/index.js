@@ -391,7 +391,7 @@ new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
   container: '#photos',
   breakpoints: {
     320: {
-      margin: 2,
+      margin: 4,
       columns: 2
     },
     768: {

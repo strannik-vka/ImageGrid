@@ -4,7 +4,7 @@ new ImageGrid({
     container: '#photos',
     breakpoints: {
         320: {
-            margin: 2,
+            margin: 4,
             columns: 2
         },
         768: {
