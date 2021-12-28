@@ -2,6 +2,18 @@ import ImageGrid from '../../ImageGrid';
 
 new ImageGrid({
     container: '#photos',
-    margin: 8,
-    columns: 6
+    breakpoints: {
+        320: {
+            margin: 2,
+            columns: 2
+        },
+        768: {
+            margin: 4,
+            columns: 4
+        },
+        1200: {
+            margin: 8,
+            columns: 6
+        }
+    }
 });

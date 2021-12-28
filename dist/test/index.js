@@ -389,8 +389,20 @@ __webpack_require__.r(__webpack_exports__);
 
 new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
   container: '#photos',
-  margin: 8,
-  columns: 6
+  breakpoints: {
+    320: {
+      margin: 2,
+      columns: 2
+    },
+    768: {
+      margin: 4,
+      columns: 4
+    },
+    1200: {
+      margin: 8,
+      columns: 6
+    }
+  }
 });
 })();
 
