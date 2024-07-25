@@ -157,16 +157,19 @@ var ImageGrid = /*#__PURE__*/function () {
     this.breakpoints = obj.breakpoints;
     this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 8;
     this.columns = typeof obj.columns !== 'undefined' ? obj.columns : 6;
-    this.setBreakpoint();
-    this.each();
+    this.restart();
     window.addEventListener('resize', function () {
-      _this.setBreakpoint();
-
-      _this.each();
+      _this.restart();
     }, true);
   }
 
   _createClass(ImageGrid, [{
+    key: "restart",
+    value: function restart() {
+      this.setBreakpoint();
+      this.each();
+    }
+  }, {
     key: "setBreakpoint",
     value: function setBreakpoint() {
       var _this2 = this;
@@ -312,6 +315,19 @@ var ImageGrid = /*#__PURE__*/function () {
 
       return positions;
     }
+  }, {
+    key: "append",
+    value: function append(urls) {
+      var parents = document.querySelectorAll(this.container);
+      parents.forEach(function (parent) {
+        urls.forEach(function (url) {
+          var img = document.createElement('img');
+          img.src = url;
+          parent.appendChild(img);
+        });
+      });
+      this.restart();
+    }
   }]);
 
   return ImageGrid;
@@ -387,7 +403,7 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ImageGrid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../ImageGrid */ "./src/index.js");
 
-new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
+var MyImageGrid = new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
   container: '#photos',
   breakpoints: {
     320: {
@@ -404,6 +420,10 @@ new _ImageGrid__WEBPACK_IMPORTED_MODULE_0__["default"]({
     }
   }
 });
+setTimeout(function () {
+  var images = ['./img/17.jpg', './img/18.jpg', './img/19.jpg', './img/20.jpg', './img/21.jpg', './img/22.jpg', './img/23.jpg', './img/24.jpg'];
+  MyImageGrid.append(images);
+}, 5000);
 })();
 
 /******/ })()

@@ -1,4 +1,4 @@
-require('./helpers');
+import './helpers';
 
 import Img from "./img";
 
@@ -14,13 +14,16 @@ class ImageGrid {
         this.margin = typeof obj.margin !== 'undefined' ? obj.margin : 8;
         this.columns = typeof obj.columns !== 'undefined' ? obj.columns : 6;
 
-        this.setBreakpoint();
-        this.each();
+        this.restart();
 
         window.addEventListener('resize', () => {
-            this.setBreakpoint();
-            this.each();
+            this.restart();
         }, true);
+    }
+
+    restart() {
+        this.setBreakpoint();
+        this.each();
     }
 
     setBreakpoint() {
@@ -171,6 +174,22 @@ class ImageGrid {
         }
 
         return positions;
+    }
+
+    append(urls) {
+        var parents = document.querySelectorAll(this.container);
+
+        parents.forEach((parent) => {
+            urls.forEach(url => {
+                var img = document.createElement('img');
+
+                img.src = url;
+
+                parent.appendChild(img);
+            });
+        });
+
+        this.restart();
     }
 
 }
